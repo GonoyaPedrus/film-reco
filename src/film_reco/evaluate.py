@@ -43,6 +43,8 @@ def evaluate(
     like_threshold: float = 4.0,
     test_frac: float = 0.2,
 ) -> Metrics:
+    if k <= 0 or not 0 < test_frac < 1:
+        raise ValueError("k doit être > 0 et test_frac dans ]0, 1[")
     catalog = set(catalog)
     ratings = ratings[ratings["tmdb_id"].isin(catalog)]
     train, test = temporal_split(ratings, test_frac)

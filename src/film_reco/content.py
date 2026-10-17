@@ -66,6 +66,8 @@ class ContentRecommender:
 
         self._blocks = {k: normalize(v).tocsr() for k, v in blocks.items()}
         self._total = sum(self.weights.values())
+        if self._total <= 0:
+            raise ValueError("La somme des poids doit être strictement positive")
         return self
 
     def _scores(self, profile: dict[str, sparse.csr_matrix]) -> dict[str, np.ndarray]:
@@ -96,10 +98,15 @@ class ContentRecommender:
         self, liked: Iterable[int], k: int = 10, exclude: Iterable[int] = ()
     ) -> list[int]:
         """Top-k pour un profil = moyenne des vecteurs des films aimés."""
+        liked = list(liked)
         rows = [self._index[t] for t in liked if t in self._index]
         if not rows:
             return []
-        profile = {b: sparse.csr_matrix(m[rows].mean(axis=0)) for b, m in self._blocks.items()}
+        # Re-normalisé par champ : sinon la moyenne de vecteurs dispersés (synopsis) a une norme
+        # bien plus faible que celle de vecteurs proches (genres) et fausse les poids.
+        profile = {
+            b: normalize(sparse.csr_matrix(m[rows].mean(axis=0))) for b, m in self._blocks.items()
+        }
         scores = self._combine(self._scores(profile))
         banned = [self._index[t] for t in set(exclude) | set(liked) if t in self._index]
         scores[banned] = -np.inf

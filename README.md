@@ -20,9 +20,9 @@ film-reco evaluate -k 10                   # popularité vs content-based sur Mo
 `similar` affiche le score global et le détail par champ, ce qui explique chaque recommandation :
 
 ```
- tmdb_id                 title   year  score  overview  genres  keywords  cast  director
-   49026 The Dark Knight Rises 2012.0  0.582     0.272   1.000     0.402 0.377       1.0
-     272         Batman Begins 2005.0  0.512     0.147   0.874     0.336 0.382       1.0
+ tmdb_id                 title  year  score  overview  genres  keywords  cast  director
+   49026 The Dark Knight Rises  2012  0.582     0.272   1.000     0.402 0.377       1.0
+     272         Batman Begins  2005  0.512     0.147   0.874     0.336 0.382       1.0
 ```
 
 ## Fonctionnement
@@ -40,11 +40,14 @@ film-reco evaluate -k 10                   # popularité vs content-based sur Mo
 
 | modèle                    |  P@10  |  R@10  | couverture |
 |---------------------------|--------|--------|------------|
-| popularité                | 0.0591 | 0.0677 |   0.019    |
-| content-based (défaut)    | 0.0168 | 0.0282 |   0.271    |
-| content-based cast + réal | 0.0273 | 0.0348 |   0.204    |
+| popularité                | 0.0591 | 0.0654 |   0.019    |
+| content-based (défaut)    | 0.0290 | 0.0356 |   0.250    |
+| content-based genres + kw | 0.0087 | 0.0135 |   0.269    |
 
-La popularité gagne nettement en précision, le content-based couvre 10 à 15 fois plus du catalogue.
+La popularité gagne en précision (×2), le content-based couvre 13 fois plus du catalogue.
+Le cast et le réalisateur portent l'essentiel du signal ; genres et mots-clés seuls sont faibles.
+Limite connue : le split est temporel par utilisateur, mais le classement de popularité agrège les
+notes de tous les utilisateurs, ce qui avantage légèrement la référence.
 C'est le résultat classique : le contenu seul ne suffit pas, d'où l'intérêt d'un hybride.
 Seuls 70 % des notes MovieLens portent sur un film présent dans TMDB 5000 (3 535 films).
 

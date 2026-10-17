@@ -49,3 +49,9 @@ def test_popularity_is_trained_on_train_split_only(ratings):
     # Le film 3 n'est noté qu'en test : la référence ne doit pas le connaître.
     m = evaluate(popularity_recommender, ratings, catalog=[1, 2, 3, 4, 5], k=1, test_frac=0.25)
     assert m.precision == 0.0
+
+
+@pytest.mark.parametrize("kwargs", [{"k": 0}, {"test_frac": 1.5}])
+def test_invalid_parameters_rejected(ratings, kwargs):
+    with pytest.raises(ValueError):
+        evaluate(popularity_recommender, ratings, catalog=[1, 2, 3, 4, 5], **kwargs)

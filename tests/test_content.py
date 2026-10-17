@@ -44,3 +44,13 @@ def test_excluded_films_never_pad_short_lists(movies):
     model = ContentRecommender().fit(movies)
     assert model.recommend([1, 2], k=10, exclude=[3, 4]) == [5]
     assert 2 not in model.similar(2, k=10)["tmdb_id"].tolist()
+
+
+def test_recommend_accepts_generator(movies):
+    recs = ContentRecommender().fit(movies).recommend((t for t in [1, 2]), k=3)
+    assert 1 not in recs and 2 not in recs
+
+
+def test_zero_weights_rejected(movies):
+    with pytest.raises(ValueError):
+        ContentRecommender(weights={"cast": 0.0}).fit(movies)

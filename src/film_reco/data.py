@@ -74,7 +74,7 @@ def load_tmdb(data_dir: Path = DATA_DIR) -> pd.DataFrame:
             "genres": movies["genres"].map(_names),
             "keywords": movies["keywords"].map(_names),
             "companies": movies["production_companies"].map(_names),
-            "year": pd.to_datetime(movies["release_date"], errors="coerce").dt.year,
+            "year": pd.to_datetime(movies["release_date"], errors="coerce").dt.year.astype("Int64"),
             "popularity": movies["popularity"],
             "vote_count": movies["vote_count"],
         }
@@ -98,4 +98,6 @@ def load_movielens(data_dir: Path = DATA_DIR) -> pd.DataFrame:
     links = pd.read_csv(data_dir / "movielens" / "links.csv").dropna(subset=["tmdbId"])
     links["tmdb_id"] = links["tmdbId"].astype(int)
     out = ratings.merge(links[["movieId", "tmdb_id"]], on="movieId", how="inner")
+    # Quelques movieId partagent un même tmdbId : on garde la note la plus récente.
+    out = out.sort_values("timestamp").drop_duplicates(["userId", "tmdb_id"], keep="last")
     return out.rename(columns={"userId": "user_id"})[["user_id", "tmdb_id", "rating", "timestamp"]]
